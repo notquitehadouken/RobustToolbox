@@ -12,13 +12,13 @@ namespace Robust.Client.Audio.Sources;
 
 internal sealed class BufferedAudioSource : BaseAudioSource, IBufferedAudioSource
 {
-    private int? SourceHandle = null;
+    private new int? SourceHandle = null;
     private int[] BufferHandles;
     private Dictionary<int, int> BufferMap = new();
     private readonly AudioManager _master;
     private bool _mono = true;
     private bool _float = false;
-    private int FilterHandle;
+    private new int FilterHandle;
 
     public int SampleRate { get; set; } = 44100;
 

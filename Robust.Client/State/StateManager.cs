@@ -10,6 +10,7 @@ namespace Robust.Client.State
     {
         [Dependency] private readonly IDynamicTypeFactory _typeFactory = default!;
         [Dependency] private readonly IUserInterfaceManager _interfaceManager = default!;
+        [Dependency] private readonly ISawmill _sawmill = default!;
         public event Action<StateChangedEventArgs>? OnStateChanged;
         public State CurrentState { get; private set; }
 
@@ -38,7 +39,7 @@ namespace Robust.Client.State
 
         private State SwitchToState(Type type)
         {
-            Logger.Debug($"Switching to state {type}");
+            _sawmill.Debug($"Switching to state {type}");
 
             var newState = _typeFactory.CreateInstance<State>(type);
 

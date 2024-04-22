@@ -30,6 +30,7 @@ namespace Robust.Server.Placement
         [Dependency] private readonly IServerEntityManager _entityManager = default!;
         [Dependency] private readonly IMapManager _mapManager = default!;
         [Dependency] private readonly ILogManager _logManager = default!;
+        [Dependency] private readonly SharedMapSystem _sharedMap = default!;
 
         private EntityLookupSystem _lookup => _entityManager.System<EntityLookupSystem>();
         private SharedMapSystem _maps => _entityManager.System<SharedMapSystem>();
@@ -85,7 +86,6 @@ namespace Robust.Server.Placement
 
         public void HandlePlacementRequest(MsgPlacement msg)
         {
-            var alignRcv = msg.Align;
             var isTile = msg.IsTile;
 
             int tileType = 0;
@@ -209,7 +209,7 @@ namespace Robust.Server.Placement
                 var newGrid = _mapManager.CreateGridEntity(coordinates.GetMapId(_entityManager));
                 var newGridXform = _entityManager.GetComponent<TransformComponent>(newGrid);
                 _xformSystem.SetWorldPosition(newGridXform, coordinates.Position - newGrid.Comp.TileSizeHalfVector); // assume bottom left tile origin
-                var tilePos = newGrid.Comp.WorldToTile(coordinates.Position);
+                var tilePos = _sharedMap.WorldToTile(newGrid.Owner, newGrid.Comp, coordinates.Position); //newGrid.Comp.WorldToTile(coordinates.Position);
                 _maps.SetTile(newGrid.Owner, newGrid.Comp, tilePos, new Tile(tileType));
 
                 var placementEraseEvent = new PlacementTileEvent(tileType, coordinates, placingUserId);
@@ -408,18 +408,5 @@ namespace Robust.Server.Placement
         }
 
         #endregion IPlacementManager Members
-
-        private PlacementInformation? GetPermission(EntityUid uid, string alignOpt)
-        {
-            foreach (var buildPermission in BuildPermissions)
-            {
-                if (buildPermission.MobUid == uid && buildPermission.PlacementOption == alignOpt)
-                {
-                    return buildPermission;
-                }
-            }
-
-            return null;
-        }
     }
 }

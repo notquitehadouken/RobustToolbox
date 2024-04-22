@@ -129,23 +129,24 @@ internal struct WordWrap
     public int FinalizeText(out int? breakLine)
     {
         // This needs to happen because word wrapping doesn't get checked for the last word.
+        ISawmill sawmill = default!;
         if (PosX > _maxSizeX)
         {
             if (!WordStartBreakIndex.HasValue)
             {
-                Logger.Error(
+                sawmill.Error(
                     "Assert fail inside RichTextEntry.Update, " +
                     "wordStartBreakIndex is null on method end w/ word wrap required. " +
                     "Dumping relevant stuff. Send this to PJB.");
                 // Logger.Error($"Message: {Message}");
-                Logger.Error($"maxSizeX: {_maxSizeX}");
-                Logger.Error($"maxUsedWidth: {MaxUsedWidth}");
-                Logger.Error($"breakIndexCounter: {BreakIndexCounter}");
-                Logger.Error("wordStartBreakIndex: null (duh)");
-                Logger.Error($"wordSizePixels: {WordSizePixels}");
-                Logger.Error($"posX: {PosX}");
-                Logger.Error($"lastChar: {LastRune}");
-                Logger.Error($"forceSplitData: {ForceSplitData}");
+                sawmill.Error($"maxSizeX: {_maxSizeX}");
+                sawmill.Error($"maxUsedWidth: {MaxUsedWidth}");
+                sawmill.Error($"breakIndexCounter: {BreakIndexCounter}");
+                sawmill.Error("wordStartBreakIndex: null (duh)");
+                sawmill.Error($"wordSizePixels: {WordSizePixels}");
+                sawmill.Error($"posX: {PosX}");
+                sawmill.Error($"lastChar: {LastRune}");
+                sawmill.Error($"forceSplitData: {ForceSplitData}");
                 // Logger.Error($"LineBreaks: {string.Join(", ", LineBreaks)}");
 
                 throw new Exception(

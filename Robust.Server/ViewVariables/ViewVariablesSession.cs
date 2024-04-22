@@ -7,6 +7,7 @@ using Robust.Shared.Network;
 using Robust.Shared.Serialization;
 using Robust.Shared.Utility;
 using Robust.Shared.ViewVariables;
+using TerraFX.Interop.Windows;
 
 namespace Robust.Server.ViewVariables
 {

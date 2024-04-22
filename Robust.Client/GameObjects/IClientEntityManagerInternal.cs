@@ -8,8 +8,8 @@ namespace Robust.Client.GameObjects
 
         EntityUid CreateEntity(string? prototypeName, out MetaDataComponent metadata);
 
-        void InitializeEntity(EntityUid entity, MetaDataComponent? meta = null);
+        new void InitializeEntity(EntityUid entity, MetaDataComponent? meta = null);
 
-        void StartEntity(EntityUid entity);
+        new void StartEntity(EntityUid entity);
     }
 }

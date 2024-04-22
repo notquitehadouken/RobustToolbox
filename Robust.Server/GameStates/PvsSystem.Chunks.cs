@@ -242,7 +242,7 @@ internal sealed partial class PvsSystem
             {
                 chunk.Initialize(location, _metaQuery, _xformQuery);
             }
-            catch (Exception e)
+            catch
             {
                 _chunks.Remove(location);
                 throw;

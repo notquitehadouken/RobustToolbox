@@ -210,7 +210,7 @@ internal sealed partial class ResourceCache : ResourceManager, IResourceCacheInt
     #endregion IDisposable Members
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected Dictionary<ResPath, BaseResource> GetTypeDict<T>()
+    private Dictionary<ResPath, BaseResource> GetTypeDict<T>()
     {
         if (!_cachedResources.TryGetValue(typeof(T), out var ret))
         {
