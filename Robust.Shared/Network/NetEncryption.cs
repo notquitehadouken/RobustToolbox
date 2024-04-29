@@ -63,8 +63,8 @@ internal sealed class NetEncryption
         // TODO: this is probably broken for big-endian machines.
         Span<byte> nonceData = stackalloc byte[CryptoAeadXChaCha20Poly1305Ietf.NoncePublicBytes];
         nonceData.Fill(0);
-        MemoryMarshal.Write(nonceData, ref nonce);
-        MemoryMarshal.Write(ciphertext, ref nonce);
+        MemoryMarshal.Write(nonceData, in nonce);
+        MemoryMarshal.Write(ciphertext, in nonce);
 
         CryptoAeadXChaCha20Poly1305Ietf.Encrypt(
             // ciphertext
@@ -96,7 +96,7 @@ internal sealed class NetEncryption
         // TODO: this is probably broken for big-endian machines.
         Span<byte> nonceData = stackalloc byte[CryptoAeadXChaCha20Poly1305Ietf.NoncePublicBytes];
         nonceData.Fill(0);
-        MemoryMarshal.Write(nonceData, ref nonce);
+        MemoryMarshal.Write(nonceData, in nonce);
 
         var result = CryptoAeadXChaCha20Poly1305Ietf.Decrypt(
             // plaintext

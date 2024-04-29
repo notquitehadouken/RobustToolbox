@@ -21,9 +21,10 @@ namespace Robust.Shared.Containers
         [Dependency] private readonly IDynamicTypeFactoryInternal _dynFactory = default!;
         [Dependency] private readonly INetManager _net = default!;
         [Dependency] private readonly SharedPhysicsSystem _physics = default!;
-        [Dependency] private readonly EntityLookupSystem _lookup = default!;
         [Dependency] private readonly SharedTransformSystem _transform = default!;
         [Dependency] private readonly SharedJointSystem _joint = default!;
+        [Dependency] private readonly EntityLookupSystem _lookup = default!;
+
 
         private EntityQuery<ContainerManagerComponent> _managerQuery;
         private EntityQuery<MapGridComponent> _gridQuery;
@@ -553,7 +554,7 @@ namespace Robust.Shared.Containers
             if (!transform.Comp.ParentUid.IsValid()
                 || !TryGetContainingContainer(transform.Comp.ParentUid, out var container)
                 || !TryInsertIntoContainer(transform, container))
-                transform.Comp.AttachToGridOrMap();
+                _transform.AttachToGridOrMap(transform);
         }
 
         private bool TryInsertIntoContainer(Entity<TransformComponent> transform, BaseContainer container)

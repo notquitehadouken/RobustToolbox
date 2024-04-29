@@ -290,7 +290,7 @@ public abstract partial class SharedTransformSystem
             return;
         }
 
-        if (!AnchorEntity(uid, component, grid))
+        if (!AnchorEntity((uid, component), (component.ParentUid, grid)))
             component._anchored = false;
     }
 
@@ -348,7 +348,7 @@ public abstract partial class SharedTransformSystem
     #region GridId
 
     /// <summary>
-    /// Sets the <see cref="GridId"/> for the transformcomponent without updating its children. Does not Dirty it.
+    /// Sets the GridId for the transformcomponent without updating its children. Does not Dirty it.
     /// </summary>
     internal void SetGridIdNoRecursive(EntityUid uid, TransformComponent xform, EntityUid? gridUid)
     {
@@ -361,7 +361,7 @@ public abstract partial class SharedTransformSystem
     }
 
     /// <summary>
-    /// Sets the <see cref="GridId"/> for the transformcomponent. Does not Dirty it.
+    /// Sets the GridId for the transformcomponent. Does not Dirty it.
     /// </summary>
     public void SetGridId(EntityUid uid, TransformComponent xform, EntityUid? gridId, EntityQuery<TransformComponent>? xformQuery = null)
     {
@@ -439,11 +439,15 @@ public abstract partial class SharedTransformSystem
     /// <summary>
     ///     This sets the local position and parent of an entity.
     /// </summary>
+    /// <param name="entity">The entity</param>
+    /// <param name="value">The coordinates of the entity</param>
     /// <param name="rotation">Final local rotation. If not specified, this will attempt to preserve world
     /// rotation.</param>
     /// <param name="unanchor">Whether or not to unanchor the entity before moving. Note that this will still move the
     /// entity even when false. If you set this to false, you need to manually manage the grid lookup changes and ensure
     /// the final position is valid</param>
+    /// <param name="newParent">The new transform</param>
+    /// <param name="oldParent">The old transform</param>
     public void SetCoordinates(
         Entity<TransformComponent, MetaDataComponent> entity,
         EntityCoordinates value,
@@ -644,7 +648,7 @@ public abstract partial class SharedTransformSystem
 
         foreach (var child in oldXform._children.ToArray())
         {
-            SetParent(child, xformQuery.GetComponent(child), uid, xformQuery, xform);
+            SetParent((child, xformQuery.GetComponent(child)), uid, xformQuery, xform);
         }
 
         DebugTools.Assert(oldXform.ChildCount == 0);
@@ -669,17 +673,17 @@ public abstract partial class SharedTransformSystem
 
     public void SetParent(EntityUid uid, EntityUid parent)
     {
-        SetParent(uid, XformQuery.GetComponent(uid), parent, XformQuery);
+        SetParent((uid, XformQuery.GetComponent(uid)), parent, XformQuery);
     }
 
     public void SetParent(EntityUid uid, TransformComponent xform, EntityUid parent, TransformComponent? parentXform = null)
     {
-        SetParent(uid, xform, parent, XformQuery, parentXform);
+        SetParent((uid, xform), parent, XformQuery, parentXform);
     }
 
-    public void SetParent(EntityUid uid, TransformComponent xform, EntityUid parent, EntityQuery<TransformComponent> xformQuery, TransformComponent? parentXform = null)
+    public void SetParent(Entity<TransformComponent> uid, EntityUid parent, EntityQuery<TransformComponent> xformQuery, TransformComponent? parentXform = null)
     {
-        DebugTools.Assert(uid == xform.Owner);
+        var xform = uid.Comp;
         if (xform.ParentUid == parent)
             return;
 
@@ -703,7 +707,11 @@ public abstract partial class SharedTransformSystem
     #endregion
 
     #region States
-    public virtual void ActivateLerp(EntityUid uid, TransformComponent xform) { }
+
+    public virtual void ActivateLerp(EntityUid uid, TransformComponent xform)
+    {
+
+    }
 
     internal void OnGetState(EntityUid uid, TransformComponent component, ref ComponentGetState args)
     {
@@ -763,7 +771,10 @@ public abstract partial class SharedTransformSystem
             }
             else
             {
-                xform.Anchored = newState.Anchored;
+                if (!newState.Anchored)
+                    Unanchor(uid, xform);
+                else
+                    AnchorEntity(uid, xform);
             }
 
             if (oldAnchored != newState.Anchored && xform.Initialized)
@@ -934,7 +945,7 @@ public abstract partial class SharedTransformSystem
             // Entity was not actually in the transform hierarchy. This is probably a sign that something is wrong, or that the function is being misused.
             Log.Warning($"Target entity ({ToPrettyString(relative)}) not in transform hierarchy while calling {nameof(GetRelativePositionRotation)}.");
             var relXform = query.GetComponent(relative);
-            pos = relXform.InvWorldMatrix.Transform(pos);
+            pos = GetInvWorldMatrix(relXform).Transform(pos);
             rot = rot - GetWorldRotation(relXform, query);
             break;
         }
@@ -965,7 +976,7 @@ public abstract partial class SharedTransformSystem
             // Entity was not actually in the transform hierarchy. This is probably a sign that something is wrong, or that the function is being misused.
             Log.Warning($"Target entity ({ToPrettyString(relative)}) not in transform hierarchy while calling {nameof(GetRelativePositionRotation)}.");
             var relXform = query.GetComponent(relative);
-            pos = relXform.InvWorldMatrix.Transform(pos);
+            pos = GetInvWorldMatrix(relXform).Transform(pos);
             break;
         }
 
@@ -1049,7 +1060,7 @@ public abstract partial class SharedTransformSystem
     {
         var current = GetWorldRotation(component);
         var diff = angle - current;
-        SetLocalRotation(component, component.LocalRotation + diff);
+        component.LocalRotation += diff;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1063,7 +1074,7 @@ public abstract partial class SharedTransformSystem
     {
         var current = GetWorldRotation(component, xformQuery);
         var diff = angle - current;
-        SetLocalRotation(component, component.LocalRotation + diff);
+        component.LocalRotation += diff;
     }
 
     #endregion
