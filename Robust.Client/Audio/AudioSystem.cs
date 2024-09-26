@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
+using Robust.Client.Audio.Events;
 using Robust.Client.GameObjects;
 using Robust.Client.Graphics;
 using Robust.Client.Player;
@@ -548,6 +549,9 @@ public sealed partial class AudioSystem : SharedAudioSystem
         var playing = CreateAndStartPlayingStream(audioParams, stream);
         _xformSys.SetCoordinates(playing.Entity, new EntityCoordinates(entity, Vector2.Zero));
 
+        var ev = new AudioEvents.AudioPlayEntityEvent(entity);
+        RaiseLocalEvent(playing.Entity, ref ev, true);
+
         return playing;
     }
 
@@ -591,6 +595,10 @@ public sealed partial class AudioSystem : SharedAudioSystem
 
         var playing = CreateAndStartPlayingStream(audioParams, stream);
         _xformSys.SetCoordinates(playing.Entity, coordinates);
+
+        var ev = new AudioEvents.AudioPlayCoordinatesEvent(coordinates);
+        RaiseLocalEvent(playing.Entity, ref ev, true);
+
         return playing;
     }
 
