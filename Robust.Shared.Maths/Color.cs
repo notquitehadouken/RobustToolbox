@@ -1916,4 +1916,83 @@ namespace Robust.Shared.Maths
             return false;
         }
     }
+
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public struct NColor : IEquatable<NColor>, ISpanFormattable
+    {
+        public Color Color;
+
+        public Vector3 Normal;
+
+        public static bool operator ==(NColor left, NColor right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(NColor left, NColor right)
+        {
+            return !left.Equals(right);
+        }
+
+        public static bool operator ==(NColor left, Color right)
+        {
+            return left.Color.Equals(right);
+        }
+
+        public static bool operator !=(NColor left, Color right)
+        {
+            return !left.Color.Equals(right);
+        }
+
+        public static bool operator ==(Color left, NColor right)
+        {
+            return left.Equals(right.Color);
+        }
+
+        public static bool operator !=(Color left, NColor right)
+        {
+            return !left.Equals(right.Color);
+        }
+
+        public readonly bool Equals(NColor other)
+        {
+            return Color == other.Color && Normal == other.Normal;
+        }
+
+        public readonly override bool Equals(object? other)
+        {
+            if (!(other is Color || other is NColor))
+                return false;
+            return Equals(other);
+        }
+
+        public readonly override int GetHashCode()
+        {
+            int hash = Color.GetHashCode() ^ Normal.GetHashCode();
+            int off = sizeof(int) >> 1;
+            int up = hash >> off;
+            return up | (hash << off);
+        }
+
+        public readonly override string ToString()
+        {
+            return $"{{(R, G, B, A, X, Y, Z) = ({Color.RGBA}, {Normal})}}";
+        }
+
+        public readonly string ToString(string? format, IFormatProvider? formatProvider)
+            => ToString();
+
+        public readonly bool TryFormat(
+            Span<char> destination,
+            out int charsWritten,
+            ReadOnlySpan<char> format,
+            IFormatProvider? provider)
+        {
+            return FormatHelpers.TryFormatInto(
+                destination,
+                out charsWritten,
+                $"{{(R, G, B, A, X, Y, Z) = ({Color.RGBA}, {Normal})}}");
+        }
+    }
 }
