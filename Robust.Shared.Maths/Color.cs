@@ -1925,6 +1925,30 @@ namespace Robust.Shared.Maths
 
         public Vector3 Normal;
 
+        public NColor(Color color, Vector3 normal)
+        {
+            Color = color;
+            Normal = normal;
+        }
+
+        public NColor(Vector3 normal, Color color)
+        {
+            Color = color;
+            Normal = normal;
+        }
+
+        public NColor(Color color)
+        {
+            Color = color;
+            Normal = Vector3.UnitZ;
+        }
+
+        public NColor(Vector3 normal)
+        {
+            Color = new Color();
+            Normal = normal;
+        }
+
         public static bool operator ==(NColor left, NColor right)
         {
             return left.Equals(right);
@@ -1969,10 +1993,7 @@ namespace Robust.Shared.Maths
 
         public readonly override int GetHashCode()
         {
-            int hash = Color.GetHashCode() ^ Normal.GetHashCode();
-            int off = sizeof(int) >> 1;
-            int up = hash >> off;
-            return up | (hash << off);
+            return Color.GetHashCode() ^ Normal.GetHashCode();
         }
 
         public readonly override string ToString()

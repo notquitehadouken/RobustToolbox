@@ -649,7 +649,7 @@ namespace Robust.Client.Graphics.Clyde
                 return $"ClydeTexture: ({TextureId})";
             }
 
-            public override unsafe Color GetPixel(int x, int y)
+            public override unsafe NColor GetPixel(int x, int y)
             {
                 if (!_clyde._loadedTextures.TryGetValue(TextureId, out var loaded))
                 {
@@ -670,7 +670,10 @@ namespace Robust.Client.Graphics.Clyde
                 GL.BindTexture(TextureTarget.Texture2D, curTexture2D);
 
                 var pixelPos = (loaded.Size.X * (loaded.Size.Y - y - 1) + x) * 4;
-                var color = new Color(buffer[pixelPos+0], buffer[pixelPos+1], buffer[pixelPos+2], buffer[pixelPos+3]);
+                var color = new NColor(new Color(buffer[pixelPos + 0],
+                    buffer[pixelPos + 1],
+                    buffer[pixelPos + 2],
+                    buffer[pixelPos + 3]));
                 ArrayPool<byte>.Shared.Return(buffer);
                 return color;
             }

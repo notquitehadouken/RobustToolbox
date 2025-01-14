@@ -7,7 +7,7 @@ using Robust.Shared.IoC;
 using Robust.Shared.Maths;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using Color = Robust.Shared.Maths.Color;
+using NColor = Robust.Shared.Maths.Color;
 
 namespace Robust.Client.Graphics;
 
@@ -32,7 +32,7 @@ public abstract class Texture : IRsiStateLike
     /// </summary>
     public Vector2i Size { get; /*protected set;*/ }
 
-    public Color this[int x, int y] => this.GetPixel(x, y);
+    public NColor this[int x, int y] => this.GetPixel(x, y);
 
     protected Texture(Vector2i size)
     {
@@ -66,7 +66,7 @@ public abstract class Texture : IRsiStateLike
         return this;
     }
 
-    public abstract Color GetPixel(int x, int y);
+    public abstract NColor GetPixel(int x, int y);
 
     public static Texture Transparent =>
                 IoCManager.Resolve<IClydeInternal>().GetStockTexture(ClydeStockTexture.Transparent);
