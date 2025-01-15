@@ -7,7 +7,7 @@ using Robust.Shared.IoC;
 using Robust.Shared.Maths;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using NColor = Robust.Shared.Maths.Color;
+using NColor = Robust.Shared.Maths.NColor;
 
 namespace Robust.Client.Graphics;
 

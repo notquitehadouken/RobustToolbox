@@ -91,15 +91,38 @@ namespace Robust.Client.ResourceManagement
 
                 var stateObject = metadata.States[index];
                 // Load image from disk.
+                // Shamelessly stolen from the PR I made April of last year
                 var texPath = data.Path / (stateObject.StateId + ".png");
+                var normalPath = data.Path / (stateObject.NormalId + ".png");
                 using (var stream = manager.ContentFileRead(texPath))
                 {
-                    reg.Src = Image.Load<Rgba32>(stream);
+                    var texture = Image.Load<Rgba32>(stream);
+                    if (stateObject.NormalId is not null)
+                    {
+                        using (var normalStream = manager.ContentFileRead(normalPath))
+                        {
+                            reg.Src = (texture, Image.Load<Rgba32>(normalStream));
+                        }
+                    }
+                    else
+                    {
+                        var normalImage = new Image<Rgba32>(texture.Width, texture.Height);
+                        for (int nX = 0; nX < texture.Width; nX++)
+                        {
+                            for (int nY = 0; nY < texture.Height; nY++)
+                            {
+                                normalImage[nX, nY] = new Rgba32(0.5f, 0.5f, 1f);
+                            }
+                        }
+                        reg.Src = (texture, normalImage);
+                    }
                 }
 
-                if (reg.Src.Width % frameSize.X != 0 || reg.Src.Height % frameSize.Y != 0)
+                DebugTools.Assert(reg.Src.Item1.Size == reg.Src.Item2.Size, $"Texture and normal sizes of image '{texPath}' are unequal.");
+
+                if (reg.Src.Item1.Width % frameSize.X != 0 || reg.Src.Item1.Height % frameSize.Y != 0)
                 {
-                    var regDims = $"{reg.Src.Width}x{reg.Src.Height}";
+                    var regDims = $"{reg.Src.Item1.Width}x{reg.Src.Item1.Height}";
                     var iconDims = $"{frameSize.X}x{frameSize.Y}";
                     throw new RSILoadException($"State '{stateObject.StateId}' image size ({regDims}) is not a multiple of the icon size ({iconDims}).");
                 }
@@ -145,6 +168,7 @@ namespace Robust.Client.ResourceManagement
             var dimensionY = (int) MathF.Ceiling((float) totalFrameCount / dimensionX);
 
             var sheet = new Image<Rgba32>(dimensionX * frameSize.X, dimensionY * frameSize.Y);
+            var sheetNormal = new Image<Rgba32>(dimensionX * frameSize.X, dimensionY * frameSize.Y);
 
             var sheetIndex = 0;
             for (var index = 0; index < toAtlas.Length; index++)
@@ -153,7 +177,7 @@ namespace Robust.Client.ResourceManagement
                 // Blit all the frames over.
                 for (var i = 0; i < reg.TotalFrameCount; i++)
                 {
-                    var srcWidth = (reg.Src.Width / frameSize.X);
+                    var srcWidth = (reg.Src.Item1.Width / frameSize.X);
                     var srcColumn = i % srcWidth;
                     var srcRow = i / srcWidth;
                     var srcPos = (srcColumn * frameSize.X, srcRow * frameSize.Y);
@@ -164,7 +188,8 @@ namespace Robust.Client.ResourceManagement
 
                     var srcBox = UIBox2i.FromDimensions(srcPos, frameSize);
 
-                    reg.Src.Blit(srcBox, sheet, sheetPos);
+                    reg.Src.Item1.Blit(srcBox, sheet, sheetPos);
+                    reg.Src.Item2.Blit(srcBox, sheetNormal, sheetPos);
                 }
 
                 sheetIndex += reg.TotalFrameCount;
@@ -173,11 +198,13 @@ namespace Robust.Client.ResourceManagement
             for (var i = 0; i < toAtlas.Length; i++)
             {
                 ref var reg = ref toAtlas[i];
-                reg.Src.Dispose();
+                reg.Src.Item1.Dispose();
+                reg.Src.Item2.Dispose();
             }
 
             data.Rsi = rsi;
             data.AtlasSheet = sheet;
+            data.AtlasNormalSheet = sheetNormal;
             data.AtlasList = toAtlas;
             data.FrameSize = frameSize;
             data.DimX = dimensionX;
@@ -379,6 +406,7 @@ namespace Robust.Client.ResourceManagement
             public bool Bad;
             public ResPath Path = default!;
             public Image<Rgba32> AtlasSheet = default!;
+            public Image<Rgba32> AtlasNormalSheet = default!;
             public int DimX;
             public StateReg[] AtlasList = default!;
             public Vector2i FrameSize;
@@ -392,7 +420,7 @@ namespace Robust.Client.ResourceManagement
 
         internal struct StateReg
         {
-            public Image<Rgba32> Src;
+            public (Image<Rgba32>, Image<Rgba32>) Src;
             public Texture[][] Output;
             public int[][] Indices;
             public Vector2i[][] Offsets;

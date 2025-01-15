@@ -656,8 +656,9 @@ namespace Robust.Client.Graphics.Clyde
                     throw new DataException("Texture not found");
                 }
 
+                var blockSize = sizeof(NColor);
                 var curTexture2D = GL.GetInteger(GetPName.TextureBinding2D);
-                var bufSize = 4 * loaded.Size.X * loaded.Size.Y;
+                var bufSize = blockSize * loaded.Size.X * loaded.Size.Y;
                 var buffer = ArrayPool<byte>.Shared.Rent(bufSize);
 
                 GL.BindTexture(TextureTarget.Texture2D, loaded.OpenGLObject.Handle);
@@ -669,7 +670,7 @@ namespace Robust.Client.Graphics.Clyde
 
                 GL.BindTexture(TextureTarget.Texture2D, curTexture2D);
 
-                var pixelPos = (loaded.Size.X * (loaded.Size.Y - y - 1) + x) * 4;
+                var pixelPos = (loaded.Size.X * (loaded.Size.Y - y - 1) + x) * blockSize;
                 var color = new NColor(new Color(buffer[pixelPos + 0],
                     buffer[pixelPos + 1],
                     buffer[pixelPos + 2],

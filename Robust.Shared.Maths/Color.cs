@@ -1923,15 +1923,21 @@ namespace Robust.Shared.Maths
     {
         public Color Color;
 
-        public Vector3 Normal;
+        public SysVector3 Normal;
 
-        public NColor(Color color, Vector3 normal)
+        public NColor(Color color, SysVector3 normal)
         {
             Color = color;
             Normal = normal;
         }
 
-        public NColor(Vector3 normal, Color color)
+        public NColor(Color color, Color normal)
+        {
+            Color = color;
+            Normal = new SysVector3(normal.R, normal.G, normal.B);
+        }
+
+        public NColor(SysVector3 normal, Color color)
         {
             Color = color;
             Normal = normal;
@@ -1940,10 +1946,10 @@ namespace Robust.Shared.Maths
         public NColor(Color color)
         {
             Color = color;
-            Normal = Vector3.UnitZ;
+            Normal = SysVector3.UnitZ;
         }
 
-        public NColor(Vector3 normal)
+        public NColor(SysVector3 normal)
         {
             Color = new Color();
             Normal = normal;
