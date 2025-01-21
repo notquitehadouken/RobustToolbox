@@ -1923,7 +1923,26 @@ namespace Robust.Shared.Maths
     {
         public Color Color;
 
+        public float R => Color.R;
+
+        public float G => Color.G;
+
+        public float B => Color.B;
+
+        public float A => Color.A;
+
+        /// <summary>
+        /// The normal vector of this color. W is transparency.
+        /// </summary>
+        ///
+
         public SysVector3 Normal;
+
+        public float X => Normal.X;
+
+        public float Y => Normal.Y;
+
+        public float Z => Normal.Z;
 
         public NColor(Color color, SysVector3 normal)
         {
@@ -1994,7 +2013,7 @@ namespace Robust.Shared.Maths
         {
             if (!(other is Color || other is NColor))
                 return false;
-            return Equals(other);
+            return this == (NColor)other;
         }
 
         public readonly override int GetHashCode()
