@@ -88,12 +88,16 @@ namespace Robust.Client.Graphics.Clyde
         // For depth calculation of lighting shadows.
         private RenderTexture _shadowRenderTarget = default!;
 
+        // For normalsssssssss.
+        private RenderTexture _normalRenderTarget = default!;
+
         // Used because otherwise a MaxLightsPerScene change callback getting hit on startup causes interesting issues (read: bugs)
         private bool _shadowRenderTargetCanInitializeSafely = false;
 
         // Proxies to textures of the above render targets.
         private ClydeTexture FovTexture => _fovRenderTarget.Texture;
         private ClydeTexture ShadowTexture => _shadowRenderTarget.Texture;
+        private ClydeTexture NormalTexture => _normalRenderTarget.Texture;
 
         private (PointLightComponent light, Vector2 pos, float distanceSquared, Angle rot)[] _lightsToRenderList = default!;
 

@@ -5,9 +5,13 @@ using Robust.Shared.Graphics;
 using Robust.Shared.Graphics.RSI;
 using Robust.Shared.IoC;
 using Robust.Shared.Maths;
+using Robust.Shared.Utility;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using NColor = Robust.Shared.Maths.NColor;
+using TerraFX.Interop.Windows;
+using TerraFX.Interop.Xlib;
+using Color = Robust.Shared.Maths.Color;
+using Vector3 = System.Numerics.Vector3;
 
 namespace Robust.Client.Graphics;
 
@@ -32,7 +36,7 @@ public abstract class Texture : IRsiStateLike
     /// </summary>
     public Vector2i Size { get; /*protected set;*/ }
 
-    public NColor this[int x, int y] => this.GetPixel(x, y);
+    public (Color this[int x, int y] => this.GetPixel(x, y);
 
     protected Texture(Vector2i size)
     {
@@ -66,7 +70,7 @@ public abstract class Texture : IRsiStateLike
         return this;
     }
 
-    public abstract NColor GetPixel(int x, int y);
+    public abstract (Color, Color) GetPixel(int x, int y);
 
     public static Texture Transparent =>
                 IoCManager.Resolve<IClydeInternal>().GetStockTexture(ClydeStockTexture.Transparent);
@@ -76,6 +80,7 @@ public abstract class Texture : IRsiStateLike
 
     public static Texture Black =>
         IoCManager.Resolve<IClydeInternal>().GetStockTexture(ClydeStockTexture.Black);
+
 
     /// <summary>
     ///     Loads a new texture an existing image.

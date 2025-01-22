@@ -111,7 +111,7 @@ namespace Robust.Client.ResourceManagement
                         {
                             for (int nY = 0; nY < texture.Height; nY++)
                             {
-                                normalImage[nX, nY] = new Rgba32(0.5f, 0.5f, 1f);
+                                normalImage[nX, nY] = new Rgba32(0.5f, 0.5f, 1f, texture[nX, nY].A);
                             }
                         }
                         reg.Src = (texture, normalImage);

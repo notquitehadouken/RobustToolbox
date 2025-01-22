@@ -249,7 +249,7 @@ namespace Robust.Client.Graphics.Clyde
             return ScreenBufferTexture;
         }
 
-        private void DrawEntities(Viewport viewport, Box2Rotated worldBounds, Box2 worldAABB, IEye eye)
+        private void DrawEntities(Viewport viewport, Box2Rotated worldBounds, Box2 worldAABB, IEye eye, bool normal = false)
         {
             var mapId = eye.Position.MapId;
             if (mapId == MapId.Nullspace)
@@ -290,7 +290,7 @@ namespace Robust.Client.Graphics.Clyde
                 }
 
                 Vector2i roundedPos = default;
-                if (entry.Sprite.PostShader != null)
+                if (entry.Sprite.PostShader != null && !normal)
                 {
                     // get the size of the sprite on screen, scaled slightly to allow for shaders that increase the final sprite size.
                     var screenSpriteSize = (Vector2i)(entry.SpriteScreenBB.Size * PostShadeScale).Rounded();
@@ -355,7 +355,7 @@ namespace Robust.Client.Graphics.Clyde
                     }
                 }
 
-                spriteSystem.Render(entry.Uid, entry.Sprite, _renderHandle.DrawingHandleWorld, eye.Rotation, in entry.WorldRot, in entry.WorldPos);
+                spriteSystem.Render(entry.Uid, entry.Sprite, _renderHandle.DrawingHandleWorld, eye.Rotation, in entry.WorldRot, in entry.WorldPos, normal);
 
                 if (entry.Sprite.PostShader != null && entityPostRenderTarget != null)
                 {
@@ -483,6 +483,12 @@ namespace Robust.Client.Graphics.Clyde
 
                 if (eye.Position.MapId != MapId.Nullspace)
                 {
+                    using (DebugGroup("EntityNormals"))
+                    using (_prof.Group("EntityNormals"))
+                    {
+                        DrawEntities(viewport, worldBounds, worldAABB, eye, normal: true);
+                    }
+
                     using (DebugGroup("Lights"))
                     using (_prof.Group("Lights"))
                     {

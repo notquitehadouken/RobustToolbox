@@ -33,7 +33,7 @@ namespace Robust.Client.Graphics
         /// </summary>
         public UIBox2 SubRegion { get; }
 
-        public override NColor GetPixel(int x, int y)
+        public override (Color, Color) GetPixel(int x, int y)
         {
             DebugTools.Assert(x < SubRegion.Right);
             DebugTools.Assert(y < SubRegion.Top);

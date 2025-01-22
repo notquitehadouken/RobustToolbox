@@ -649,14 +649,14 @@ namespace Robust.Client.Graphics.Clyde
                 return $"ClydeTexture: ({TextureId})";
             }
 
-            public override unsafe NColor GetPixel(int x, int y)
+            public override unsafe (Color, Color) GetPixel(int x, int y)
             {
                 if (!_clyde._loadedTextures.TryGetValue(TextureId, out var loaded))
                 {
                     throw new DataException("Texture not found");
                 }
 
-                var blockSize = sizeof(NColor);
+                var blockSize = sizeof(Color) * 2;
                 var curTexture2D = GL.GetInteger(GetPName.TextureBinding2D);
                 var bufSize = blockSize * loaded.Size.X * loaded.Size.Y;
                 var buffer = ArrayPool<byte>.Shared.Rent(bufSize);
@@ -671,12 +671,16 @@ namespace Robust.Client.Graphics.Clyde
                 GL.BindTexture(TextureTarget.Texture2D, curTexture2D);
 
                 var pixelPos = (loaded.Size.X * (loaded.Size.Y - y - 1) + x) * blockSize;
-                var color = new NColor(new Color(buffer[pixelPos + 0],
+                var color = new Color(buffer[pixelPos + 0],
                     buffer[pixelPos + 1],
                     buffer[pixelPos + 2],
-                    buffer[pixelPos + 3]));
+                    buffer[pixelPos + 3]);
+                var norm = new Color(buffer[pixelPos + 4],
+                    buffer[pixelPos + 5],
+                    buffer[pixelPos + 6],
+                    buffer[pixelPos + 7]);
                 ArrayPool<byte>.Shared.Return(buffer);
-                return color;
+                return (color, norm);
             }
         }
 
