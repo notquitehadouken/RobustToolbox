@@ -63,7 +63,7 @@ namespace Robust.Client.UserInterface.CustomControls
             Contents = ContentsContainer;
 
             CloseButton.OnPressed += CloseButtonPressed;
-            XamlChildren = new SS14ContentCollection(this);
+            XamlChildren = new ContentCollection<DefaultWindow>(this);
         }
 
         public string? HeaderClass
@@ -203,91 +203,37 @@ namespace Robust.Client.UserInterface.CustomControls
 
             return mode;
         }
+    }
 
-        public sealed class SS14ContentCollection : ICollection<Control>, IReadOnlyCollection<Control>
+
+    public partial class WindowContentCollection<T> : ContentCollection<T> where T : DefaultWindow
+    {
+        private readonly T Owner;
+
+        public WindowContentCollection(T owner) : base(owner)
         {
-            private readonly DefaultWindow Owner;
+            Owner = owner;
+        }
 
-            public SS14ContentCollection(DefaultWindow owner)
+        public struct Enumerator : IEnumerator<Control>
+        {
+            private Control.OrderedChildCollection.Enumerator _enumerator;
+
+            internal Enumerator(Control owner)
             {
-                Owner = owner;
+                _enumerator = owner.Children.GetEnumerator();
             }
 
-            public Enumerator GetEnumerator()
-            {
-                return new(Owner);
-            }
+            public bool MoveNext() => _enumerator.MoveNext();
 
-            IEnumerator<Control> IEnumerable<Control>.GetEnumerator() => GetEnumerator();
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            public void Reset() => _enumerator.Reset();
 
-            public void Add(Control item)
-            {
-                Owner.Contents.AddChild(item);
-            }
+            public void Dispose() => _enumerator.Dispose();
 
-            public void Clear()
-            {
-                Owner.Contents.RemoveAllChildren();
-            }
+            public Control Current => _enumerator.Current;
 
-            public bool Contains(Control item)
-            {
-                return item?.Parent == Owner.Contents;
-            }
-
-            public void CopyTo(Control[] array, int arrayIndex)
-            {
-                Owner.Contents.Children.CopyTo(array, arrayIndex);
-            }
-
-            public bool Remove(Control item)
-            {
-                if (item?.Parent != Owner.Contents)
-                {
-                    return false;
-                }
-
-                DebugTools.AssertNotNull(Owner?.Contents);
-                Owner!.Contents.RemoveChild(item);
-
-                return true;
-            }
-
-            int ICollection<Control>.Count => Owner.Contents.ChildCount;
-            int IReadOnlyCollection<Control>.Count => Owner.Contents.ChildCount;
-
-            public bool IsReadOnly => false;
-
-
-            public struct Enumerator : IEnumerator<Control>
-            {
-                private OrderedChildCollection.Enumerator _enumerator;
-
-                internal Enumerator(DefaultWindow DefaultWindow)
-                {
-                    _enumerator = DefaultWindow.Contents.Children.GetEnumerator();
-                }
-
-                public bool MoveNext()
-                {
-                    return _enumerator.MoveNext();
-                }
-
-                public void Reset()
-                {
-                    _enumerator.Reset();
-                }
-
-                public Control Current => _enumerator.Current;
-
-                object IEnumerator.Current => Current;
-
-                public void Dispose()
-                {
-                    _enumerator.Dispose();
-                }
-            }
+            object IEnumerator.Current => Current;
         }
     }
+
 }
