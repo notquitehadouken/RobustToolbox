@@ -1,6 +1,6 @@
 ﻿namespace Robust.Client.UserInterface.CustomControls;
 
-public sealed class BaseFullscreen : BaseUIToggleable
+public abstract class BaseFullscreen : BaseUIToggleable
 {
 
 }

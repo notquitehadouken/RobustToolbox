@@ -9,6 +9,7 @@ namespace Robust.Client.UserInterface;
 
 internal partial class UserInterfaceManager
 {
+    private readonly Dictionary<Type, Queue<BaseFullscreen>> _fullscreenByType = new();
     private readonly Dictionary<Type, Queue<BaseWindow>> _windowsByType = new();
     private readonly Dictionary<Type, Queue<Popup>> _popupsByType = new();
 
@@ -114,5 +115,41 @@ internal partial class UserInterfaceManager
             data.Value.Dequeue().Dispose();
         }
         _windowsByType.Clear();
+    }
+
+    public T CreateFullscreen<T>() where T : BaseFullscreen, new()
+    {
+        var newFullscreen = _typeFactory.CreateInstanceUnchecked<T>();
+        _fullscreenByType.GetOrNew(typeof(T)).Enqueue(newFullscreen);
+        return newFullscreen;
+    }
+
+    public bool RemoveFirstFullscreen<T>() where T : BaseFullscreen, new()
+    {
+        if (!_fullscreenByType.TryGetValue(typeof(T),out var fullscreenQueue))
+            return false;
+        var oldFullscreen = fullscreenQueue.Dequeue();
+        if (fullscreenQueue.Count == 0)
+        {
+            _fullscreenByType.Remove(typeof(T));
+        }
+        _uiManager.StateRoot.RemoveChild(oldFullscreen);
+        oldFullscreen.Dispose();
+        return true;
+    }
+
+    public T GetFirstFullscreen<T>() where T : BaseFullscreen, new()
+    {
+        if (!_fullscreenByType.TryGetValue(typeof(T), out var fullscreenQueue) || fullscreenQueue.Count == 0)
+            throw new Exception("Fullscreen window of type" + typeof(T) + " not found!");
+        return (T)fullscreenQueue.Peek();
+    }
+    public bool TryGetFirstFullscreen(Type type, out BaseFullscreen? fullscreen)
+    {
+        fullscreen = null;
+        if (!typeof(BaseFullscreen).IsAssignableFrom(type)) return false;
+        if (!_fullscreenByType.TryGetValue(type, out var fullscreenQueue) || fullscreenQueue.Count == 0) return false;
+        fullscreen = fullscreenQueue.Peek();
+        return true;
     }
 }

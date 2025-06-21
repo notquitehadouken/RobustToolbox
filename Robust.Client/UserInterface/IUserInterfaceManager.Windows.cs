@@ -18,4 +18,9 @@ public partial interface IUserInterfaceManager
     public T GetFirstWindow<T>() where T : BaseWindow, new();
     public bool TryGetFirstWindow<T>(out T? window) where T : BaseWindow, new();
     public bool TryGetFirstWindow(Type type, out BaseWindow? window);
+
+    public T CreateFullscreen<T>() where T : BaseFullscreen, new();
+    public bool RemoveFirstFullscreen<T>() where T : BaseFullscreen, new();
+    public T GetFirstFullscreen<T>() where T : BaseFullscreen, new();
+    public bool TryGetFirstFullscreen(Type type, out BaseFullscreen? fullscreen);
 }

@@ -61,7 +61,7 @@ namespace Robust.Client.UserInterface.CustomControls
             Contents = ContentsContainer;
 
             CloseButton.OnPressed += CloseButtonPressed;
-            XamlChildren = new DefaultWindowContentCollection<DefaultWindow>(this);
+            XamlChildren = new ContentCollection<Control>(this.Contents);
         }
 
         public string? HeaderClass
@@ -202,36 +202,4 @@ namespace Robust.Client.UserInterface.CustomControls
             return mode;
         }
     }
-
-
-    public sealed class DefaultWindowContentCollection<T> : ContentCollection<T> where T : DefaultWindow
-    {
-        private readonly T Owner;
-
-        public DefaultWindowContentCollection(T owner) : base(owner)
-        {
-            Owner = owner;
-        }
-
-        public new struct Enumerator : IEnumerator<Control> // i just wanna change the constructor bruh
-        {
-            private Control.OrderedChildCollection.Enumerator _enumerator;
-
-            internal Enumerator(DefaultWindow owner)
-            {
-                _enumerator = owner.Contents.Children.GetEnumerator();
-            }
-
-            public bool MoveNext() => _enumerator.MoveNext();
-
-            public void Reset() => _enumerator.Reset();
-
-            public void Dispose() => _enumerator.Dispose();
-
-            public Control Current => _enumerator.Current;
-
-            object IEnumerator.Current => Current;
-        }
-    }
-
 }

@@ -3,43 +3,21 @@ using System.Numerics;
 using Robust.Client.Graphics;
 using Robust.Client.UserInterface.Controls;
 using Robust.Shared.Input;
-using Robust.Shared.IoC;
 using Robust.Shared.Log;
-using Robust.Shared.Map;
 using Robust.Shared.Maths;
-using Robust.Shared.Timing;
 
 namespace Robust.Client.UserInterface.CustomControls
 {
     /// <summary>
     ///     Provides basic functionality for windows that can be opened, dragged around, etc...
     /// </summary>
-    public abstract class BaseWindow : Control
+    public abstract class BaseWindow : BaseUIToggleable
     {
         private DragMode CurrentDrag = DragMode.None;
         private Vector2 DragOffsetTopLeft;
         private Vector2 DragOffsetBottomRight;
 
         public bool Resizable { get; set; } = true;
-        public bool IsOpen => Parent != null;
-
-        /// <summary>
-        ///     Invoked when the close button of this window is pressed.
-        /// </summary>
-        public event Action? OnClose;
-
-        public event Action? OnOpen;
-
-        public virtual void Close()
-        {
-            if (Parent == null)
-            {
-                return;
-            }
-
-            Parent.RemoveChild(this);
-            OnClose?.Invoke();
-        }
 
         protected internal override void KeyBindDown(GUIBoundKeyEventArgs args)
         {
@@ -132,10 +110,12 @@ namespace Robust.Client.UserInterface.CustomControls
                 var (left, top) = Position;
                 var (right, bottom) = Position + SetSize;
 
-                if (float.IsNaN(SetSize.X)) {
+                if (float.IsNaN(SetSize.X))
+                {
                     right = Position.X + Size.X;
                 }
-                if (float.IsNaN(SetSize.Y)) {
+                if (float.IsNaN(SetSize.Y))
+                {
                     bottom = Position.Y + Size.Y;
                 }
 
@@ -211,13 +191,7 @@ namespace Robust.Client.UserInterface.CustomControls
                 Logger.WarningS("ui", $"Window {this} had visibility false. Do not use visibility on DefaultWindow.");
             }
 
-            if (!IsOpen)
-            {
-                UserInterfaceManager.WindowRoot.AddChild(this);
-            }
-
-            Opened();
-            OnOpen?.Invoke();
+            base.Open();
         }
 
         /// <summary>
@@ -276,11 +250,6 @@ namespace Robust.Client.UserInterface.CustomControls
             // is bigger than the parent, this will currently prioritize showing the upper left corner.
             var pos = Vector2.Clamp(corner, Vector2.Zero, Parent.Size - DesiredSize);
             LayoutContainer.SetPosition(this, pos);
-        }
-
-        protected virtual void Opened()
-        {
-
         }
 
         protected virtual DragMode GetDragModeFor(Vector2 relativeMousePos)

@@ -6,7 +6,7 @@ using Robust.Shared.Utility;
 
 namespace Robust.Client.UserInterface.CustomControls;
 
-public abstract class ContentCollection<T> : ICollection<Control>, IReadOnlyCollection<Control> where T : Control
+public sealed class ContentCollection<T> : ICollection<Control>, IReadOnlyCollection<Control> where T : Control
 {
     private readonly T Owner;
 
