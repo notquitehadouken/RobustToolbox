@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
@@ -7,7 +6,6 @@ using Robust.Client.UserInterface.Controls;
 using Robust.Client.UserInterface.XAML;
 using Robust.Shared.Maths;
 using Robust.Shared.Timing;
-using Robust.Shared.Utility;
 
 namespace Robust.Client.UserInterface.CustomControls
 {
@@ -63,7 +61,7 @@ namespace Robust.Client.UserInterface.CustomControls
             Contents = ContentsContainer;
 
             CloseButton.OnPressed += CloseButtonPressed;
-            XamlChildren = new ContentCollection<DefaultWindow>(this);
+            XamlChildren = new DefaultWindowContentCollection<DefaultWindow>(this);
         }
 
         public string? HeaderClass
@@ -206,22 +204,22 @@ namespace Robust.Client.UserInterface.CustomControls
     }
 
 
-    public partial class WindowContentCollection<T> : ContentCollection<T> where T : DefaultWindow
+    public sealed class DefaultWindowContentCollection<T> : ContentCollection<T> where T : DefaultWindow
     {
         private readonly T Owner;
 
-        public WindowContentCollection(T owner) : base(owner)
+        public DefaultWindowContentCollection(T owner) : base(owner)
         {
             Owner = owner;
         }
 
-        public struct Enumerator : IEnumerator<Control>
+        public new struct Enumerator : IEnumerator<Control> // i just wanna change the constructor bruh
         {
             private Control.OrderedChildCollection.Enumerator _enumerator;
 
-            internal Enumerator(Control owner)
+            internal Enumerator(DefaultWindow owner)
             {
-                _enumerator = owner.Children.GetEnumerator();
+                _enumerator = owner.Contents.Children.GetEnumerator();
             }
 
             public bool MoveNext() => _enumerator.MoveNext();

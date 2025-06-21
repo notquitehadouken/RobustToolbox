@@ -12,8 +12,6 @@ public abstract class ContentCollection<T> : ICollection<Control>, IReadOnlyColl
 
     public ContentCollection(T owner)
     {
-
-
         Owner = owner;
     }
 
