@@ -4,6 +4,7 @@ namespace Robust.Shared.Graphics
     {
         White,
         Black,
-        Transparent
+        Transparent,
+        NormalDefault
     }
 }

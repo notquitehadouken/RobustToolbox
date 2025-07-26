@@ -1,4 +1,5 @@
 using System.Numerics;
+using OpenToolkit.Graphics.ES30;
 using Robust.Client.Graphics;
 using Robust.Client.Graphics.Clyde;
 using Robust.Client.Utility;
@@ -15,6 +16,8 @@ namespace Robust.Client.GameObjects;
 // This partial class contains code related to actually rendering sprites.
 public sealed partial class SpriteSystem
 {
+    public bool RenderingNormals { get; internal set; } = false;
+
     public void RenderSprite(
         Entity<SpriteComponent> sprite,
         DrawingHandleWorld drawingHandle,
@@ -67,7 +70,7 @@ public sealed partial class SpriteSystem
         {
             foreach (var layer in sprite.Comp.Layers)
             {
-                RenderLayer(layer, drawingHandle, ref spriteMatrix, angle, overrideDirection);
+                RenderLayer(layer, drawingHandle, ref spriteMatrix, angle, overrideDirection, eyeRotation);
             }
             return;
         }
@@ -89,16 +92,16 @@ public sealed partial class SpriteSystem
             switch (layer.RenderingStrategy)
             {
                 case LayerRenderingStrategy.UseSpriteStrategy:
-                    RenderLayer(layer, drawingHandle, ref spriteMatrix, angle, overrideDirection);
+                    RenderLayer(layer, drawingHandle, ref spriteMatrix, angle, overrideDirection, eyeRotation);
                     break;
                 case LayerRenderingStrategy.Default:
-                    RenderLayer(layer, drawingHandle, ref transformDefault, angle, overrideDirection);
+                    RenderLayer(layer, drawingHandle, ref transformDefault, angle, overrideDirection, eyeRotation);
                     break;
                 case LayerRenderingStrategy.NoRotation:
-                    RenderLayer(layer, drawingHandle, ref transformNoRot, angle, overrideDirection);
+                    RenderLayer(layer, drawingHandle, ref transformNoRot, angle, overrideDirection, eyeRotation);
                     break;
                 case LayerRenderingStrategy.SnapToCardinals:
-                    RenderLayer(layer, drawingHandle, ref transformSnap, angle, overrideDirection);
+                    RenderLayer(layer, drawingHandle, ref transformSnap, angle, overrideDirection, eyeRotation);
                     break;
                 default:
                     Log.Error($"Tried to render a layer with unknown rendering stragegy: {layer.RenderingStrategy}");
@@ -110,7 +113,7 @@ public sealed partial class SpriteSystem
     /// <summary>
     /// Render a layer. This assumes that the input angle is between 0 and 2pi.
     /// </summary>
-    private void RenderLayer(Layer layer, DrawingHandleWorld drawingHandle, ref Matrix3x2 spriteMatrix, Angle angle, Direction? overrideDirection)
+    private void RenderLayer(Layer layer, DrawingHandleWorld drawingHandle, ref Matrix3x2 spriteMatrix, Angle angle, Direction? overrideDirection, Angle eyeRotation)
     {
         if (!layer.Visible || layer.Blank)
             return;
@@ -134,7 +137,8 @@ public sealed partial class SpriteSystem
         // I.e., separate Layer -> RsiLayer, TextureLayer, LayerCollection, SpriteLayer, and ShaderLayer
         if (layer.CopyToShaderParameters != null)
         {
-            HandleShaderLayer(layer, texture, layer.CopyToShaderParameters);
+            if (!RenderingNormals)
+                HandleShaderLayer(layer, texture, layer.CopyToShaderParameters);
             return;
         }
 
@@ -142,7 +146,7 @@ public sealed partial class SpriteSystem
         var transformMatrix = Matrix3x2.Multiply(layerMatrix, spriteMatrix);
         drawingHandle.SetTransform(in transformMatrix);
 
-        if (layer.Shader != null)
+        if (layer.Shader != null && !RenderingNormals)
             drawingHandle.UseShader(layer.Shader);
 
         var layerColor = layer.Owner.Comp.color * layer.Color;
@@ -162,7 +166,7 @@ public sealed partial class SpriteSystem
 
         drawingHandle.DrawTextureRectRegion(texture, quad, layerColor);
 
-        if (layer.Shader != null)
+        if (layer.Shader != null && !RenderingNormals)
             drawingHandle.UseShader(null);
     }
 

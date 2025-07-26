@@ -28,6 +28,7 @@ namespace Robust.Client.Graphics.Clyde
         private ClydeTexture _stockTextureWhite = default!;
         private ClydeTexture _stockTextureBlack = default!;
         private ClydeTexture _stockTextureTransparent = default!;
+        private ClydeTexture _stockTextureNormalDefault = default!;
 
         private readonly Dictionary<ClydeHandle, LoadedTexture> _loadedTextures = new();
 
@@ -475,6 +476,10 @@ namespace Robust.Client.Graphics.Clyde
             var blank = new Image<Rgba32>(1, 1);
             blank[0, 0] = new Rgba32(0, 0, 0, 0);
             _stockTextureTransparent = (ClydeTexture) Texture.LoadFromImage(blank, name: "StockTextureTransparent");
+
+            var normal = new Image<Rgba32>(1, 1);
+            normal[0, 0] = new Rgba32(127, 127, 255, 255);
+            _stockTextureNormalDefault = (ClydeTexture) Texture.LoadFromImage(normal, name: "StockTextureNormalDefault");
         }
 
         /// <summary>
@@ -683,6 +688,7 @@ namespace Robust.Client.Graphics.Clyde
                 ClydeStockTexture.White => _stockTextureWhite,
                 ClydeStockTexture.Transparent => _stockTextureTransparent,
                 ClydeStockTexture.Black => _stockTextureBlack,
+                ClydeStockTexture.NormalDefault => _stockTextureBlack,
                 _ => throw new ArgumentException(nameof(stockTexture))
             };
         }

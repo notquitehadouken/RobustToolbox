@@ -22,6 +22,7 @@ namespace Robust.Client.Graphics.Clyde
 
             public DrawingHandleScreen DrawingHandleScreen { get; }
             public DrawingHandleWorld DrawingHandleWorld { get; }
+            public DrawingHandleWorld DrawingHandleWorldNormals { get; }
 
             public RenderHandle(Clyde clyde, IEntityManager entities)
             {
@@ -31,6 +32,9 @@ namespace Robust.Client.Graphics.Clyde
                 var white = _clyde.GetStockTexture(ClydeStockTexture.White);
                 DrawingHandleScreen = new DrawingHandleScreenImpl(white, this);
                 DrawingHandleWorld = new DrawingHandleWorldImpl(white, this);
+
+                var normalDefault = _clyde.GetStockTexture(ClydeStockTexture.NormalDefault);
+                DrawingHandleWorldNormals = new DrawingHandleWorldImpl(normalDefault, this);
             }
 
             public void SetModelTransform(in Matrix3x2 matrix)

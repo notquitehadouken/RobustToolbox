@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using OpenToolkit.Graphics.OpenGL4;
 using Robust.Client.GameObjects;
 using Robust.Client.ResourceManagement;
@@ -263,17 +264,21 @@ namespace Robust.Client.Graphics.Clyde
             return ScreenBufferTexture;
         }
 
-        private void DrawEntities(Viewport viewport, Box2Rotated worldBounds, Box2 worldAABB, IEye eye)
+        private void DrawEntities(Viewport viewport, Box2Rotated worldBounds, Box2 worldAABB, IEye eye, bool normal = false)
         {
             var mapId = eye.Position.MapId;
             if (mapId == MapId.Nullspace)
                 return;
 
-            RenderOverlays(viewport, OverlaySpace.WorldSpaceBelowEntities, worldAABB, worldBounds);
+            if (!normal)
+                RenderOverlays(viewport, OverlaySpace.WorldSpaceBelowEntities, worldAABB, worldBounds);
             var worldOverlays = GetOverlaysForSpace(OverlaySpace.WorldSpaceEntities);
 
             var spriteSystem = _entityManager.System<SpriteSystem>();
             GetSprites(mapId, viewport, eye, worldBounds, out var indexList);
+
+            if (normal)
+                spriteSystem.RenderingNormals = true;
 
             var screenSize = viewport.Size;
             var overlayIndex = 0;
@@ -284,27 +289,30 @@ namespace Robust.Client.Graphics.Clyde
             {
                 ref var entry = ref _drawingSpriteList[indexList[i]];
 
-                for (; overlayIndex < worldOverlays.Count; overlayIndex++)
+                if (!normal)
                 {
-                    var overlay = worldOverlays[overlayIndex];
-
-                    if (overlay.ZIndex > entry.Sprite.DrawDepth)
+                    for (; overlayIndex < worldOverlays.Count; overlayIndex++)
                     {
-                        flushed = false;
-                        break;
-                    }
+                        var overlay = worldOverlays[overlayIndex];
 
-                    if (!flushed)
-                    {
-                        FlushRenderQueue();
-                        flushed = true;
-                    }
+                        if (overlay.ZIndex > entry.Sprite.DrawDepth)
+                        {
+                            flushed = false;
+                            break;
+                        }
 
-                    RenderSingleWorldOverlay(overlay, viewport, OverlaySpace.WorldSpaceEntities, worldAABB, worldBounds);
+                        if (!flushed)
+                        {
+                            FlushRenderQueue();
+                            flushed = true;
+                        }
+
+                        RenderSingleWorldOverlay(overlay, viewport, OverlaySpace.WorldSpaceEntities, worldAABB, worldBounds);
+                    }
                 }
 
                 Vector2i roundedPos = default;
-                if (entry.Sprite.PostShader != null)
+                if (!normal && entry.Sprite.PostShader != null)
                 {
                     // get the size of the sprite on screen, scaled slightly to allow for shaders that increase the final sprite size.
                     var screenSpriteSize = (Vector2i)(entry.SpriteScreenBB.Size * PostShadeScale).Rounded();
@@ -371,7 +379,7 @@ namespace Robust.Client.Graphics.Clyde
 
                 spriteSystem.RenderSprite(new(entry.Uid, entry.Sprite), _renderHandle.DrawingHandleWorld, eye.Rotation, entry.WorldRot, entry.WorldPos);
 
-                if (entry.Sprite.PostShader != null && entityPostRenderTarget != null)
+                if (!normal && entry.Sprite.PostShader != null && entityPostRenderTarget != null)
                 {
                     var oldProj = _currentMatrixProj;
                     var oldView = _currentMatrixView;
@@ -398,19 +406,23 @@ namespace Robust.Client.Graphics.Clyde
             }
 
             // draw remainder of overlays
-            for (; overlayIndex < worldOverlays.Count; overlayIndex++)
-            {
-                if (!flushed)
+            if (!normal)
+                for (; overlayIndex < worldOverlays.Count; overlayIndex++)
                 {
-                    FlushRenderQueue();
-                    flushed = true;
-                }
+                    if (!flushed)
+                    {
+                        FlushRenderQueue();
+                        flushed = true;
+                    }
 
-                RenderSingleWorldOverlay(worldOverlays[overlayIndex], viewport, OverlaySpace.WorldSpaceEntities, worldAABB, worldBounds);
-            }
+                    RenderSingleWorldOverlay(worldOverlays[overlayIndex], viewport, OverlaySpace.WorldSpaceEntities, worldAABB, worldBounds);
+                }
 
             ArrayPool<int>.Shared.Return(indexList);
             entityPostRenderTarget?.DisposeDeferred();
+
+            if (normal)
+                spriteSystem.RenderingNormals = false;
 
             _debugStats.Entities += _drawingSpriteList.Count;
             _drawingSpriteList.Clear();
@@ -512,6 +524,12 @@ namespace Robust.Client.Graphics.Clyde
 
                 if (eye.Position.MapId != MapId.Nullspace)
                 {
+                    using (DebugGroup("EntityNormals"))
+                    using (_prof.Group("EntityNormals"))
+                    {
+                        DrawEntities(viewport, worldBounds, worldAABB, eye, true);
+                    }
+
                     using (DebugGroup("Lights"))
                     using (_prof.Group("Lights"))
                     {
