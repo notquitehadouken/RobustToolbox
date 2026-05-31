@@ -154,6 +154,12 @@ namespace Robust.Client.Graphics.Clyde
                 overlay.ScreenTexture = CopyScreenTexture(vp.RenderTarget);
             }
 
+            if (overlay.RequestFovTexture)
+            {
+                FlushRenderQueue();
+                overlay.FovTexture = FovTexture;
+            }
+
             if (overlay.OverwriteTargetFrameBuffer)
                 ClearFramebuffer(default);
 
@@ -226,6 +232,12 @@ namespace Robust.Client.Graphics.Clyde
                     {
                         FlushRenderQueue();
                         overlay.ScreenTexture = CopyScreenTexture(vp.RenderTarget);
+                    }
+
+                    if (overlay.RequestFovTexture)
+                    {
+                        FlushRenderQueue();
+                        overlay.FovTexture = FovTexture;
                     }
 
                     if (overlay.OverwriteTargetFrameBuffer)
